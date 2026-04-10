@@ -2,9 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import GlassCard from './ui/GlassCard';
 import PrimaryButton from './ui/PrimaryButton';
 
-const WAITLIST_ENDPOINT = import.meta.env.VITE_WAITLIST_FORM_ENDPOINT?.trim() || '';
+const EMAILJS_ENDPOINT = 'https://api.emailjs.com/api/v1.0/email/send';
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY?.trim() || '';
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID?.trim() || '';
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID?.trim() || '';
+const EMAILJS_FROM_EMAIL = import.meta.env.VITE_EMAILJS_FROM_EMAIL?.trim() || 'mapengbo111@gmail.com';
+const EMAILJS_FROM_NAME = import.meta.env.VITE_EMAILJS_FROM_NAME?.trim() || 'Span';
 const SUCCESS_MESSAGE =
-  import.meta.env.VITE_WAITLIST_SUCCESS_MESSAGE?.trim() ||
+  import.meta.env.VITE_EMAILJS_SUCCESS_MESSAGE?.trim() ||
   'Thanks for subscribing. We will keep you updated as the app gets closer to launch.';
 
 export default function WaitlistModal({ open, source, onClose }) {
@@ -64,30 +69,39 @@ export default function WaitlistModal({ open, source, onClose }) {
     setError('');
     setSuccess('');
 
-    if (!WAITLIST_ENDPOINT) {
-      setError('Waitlist endpoint is not configured yet. Add VITE_WAITLIST_FORM_ENDPOINT in landing/.env.');
+    if (!EMAILJS_PUBLIC_KEY || !EMAILJS_SERVICE_ID || !EMAILJS_TEMPLATE_ID) {
+      setError('EmailJS is not configured yet. Add VITE_EMAILJS_PUBLIC_KEY, VITE_EMAILJS_SERVICE_ID, and VITE_EMAILJS_TEMPLATE_ID in .env.');
       return;
     }
 
     try {
       setSubmitting(true);
 
-      const response = await fetch(WAITLIST_ENDPOINT, {
+      const response = await fetch(EMAILJS_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Accept: 'application/json',
         },
         body: JSON.stringify({
-          name: form.name.trim(),
-          email: form.email.trim(),
-          source: sourceLabel,
-          message: `Waitlist signup from ${sourceLabel}`,
+          service_id: EMAILJS_SERVICE_ID,
+          template_id: EMAILJS_TEMPLATE_ID,
+          user_id: EMAILJS_PUBLIC_KEY,
+          template_params: {
+            email: form.email.trim(),
+            contact_name: form.name.trim() || 'there',
+            support_email: EMAILJS_FROM_EMAIL,
+            from_name: EMAILJS_FROM_NAME,
+            from_email: EMAILJS_FROM_EMAIL,
+            reply_to: EMAILJS_FROM_EMAIL,
+            source: sourceLabel,
+            message: `Waitlist signup from ${sourceLabel}`,
+          },
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Unable to save your subscription right now. Please try again.');
+        const errorText = await response.text().catch(() => '');
+        throw new Error(errorText || 'Unable to save your subscription right now. Please try again.');
       }
 
       setSuccess(SUCCESS_MESSAGE);

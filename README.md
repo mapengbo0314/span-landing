@@ -7,22 +7,26 @@ It is designed to:
 - run without the main backend
 - work on GitHub Pages
 - show a waitlist modal when users click `Sign In` or `Join Now`
-- collect real subscriber emails through a hosted form endpoint
+- collect real subscriber emails through EmailJS
 
 ## Recommended Waitlist Setup
 
-For a static GitHub Pages site, the simplest option is a hosted form endpoint such as Formspree.
+This landing app now sends waitlist submissions directly through EmailJS from the browser.
 
-Create a form endpoint there, then add a local env file:
+Create a local env file:
 
 ```bash
 cp .env.example .env
 ```
 
-Set:
+Set or confirm:
 
 ```bash
-VITE_WAITLIST_FORM_ENDPOINT=https://formspree.io/f/your-form-id
+VITE_EMAILJS_PUBLIC_KEY=HTKc-BpLMf1jIJbF_
+VITE_EMAILJS_SERVICE_ID=service_vwsws69
+VITE_EMAILJS_TEMPLATE_ID=template_5c4o1dm
+VITE_EMAILJS_FROM_EMAIL=mapengbo111@gmail.com
+VITE_EMAILJS_FROM_NAME=Span
 ```
 
 ## Local Development
@@ -45,7 +49,7 @@ When a user clicks a CTA:
 - a modal opens
 - they see: "We love your interest, the app is currently under development, please subscribe to get updated!"
 - they can submit name + email
-- the site sends the payload to `VITE_WAITLIST_FORM_ENDPOINT`
+- the site sends the payload to EmailJS
 
 Submitted fields include:
 
@@ -53,6 +57,7 @@ Submitted fields include:
 - `email`
 - `source`
 - `message`
+- `support_email`
 
 ## GitHub Pages Notes
 
